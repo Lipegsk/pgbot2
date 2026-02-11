@@ -169,7 +169,7 @@ async def process_payment(update, context, plan_key):
         target_chat = update.message
 
     keyboard = InlineKeyboardMarkup([
-    [InlineKeyboardButton("✅ Já paguei", callback_data="check_payment")]
+    [InlineKeyboardButton("🔍 Verificar pagamento ✅", callback_data="check_payment")]
     ])
 
     await target_chat.reply_text(
@@ -178,7 +178,7 @@ Pague agora e receba o acesso
 vitalício automaticamente.
 
 🔥 *{label}*
-💰 *R$ {amount:.2f}*
+💰 *valor simbólico R$ {amount:.2f}*
 
 🪙 *PIX Copia e Cola:*  
 `{qr}`""",
@@ -189,13 +189,6 @@ vitalício automaticamente.
     if qr_b64:
         img = io.BytesIO(base64.b64decode(qr_b64))
         await target_chat.reply_photo(img)
-
-        await asyncio.sleep(10)
-        await target_chat.reply_text(
-            """✨ Seu link VIP aparece sozinho após o pagamento.
-Se houver atraso, clique em *Já paguei* e o sistema libera seu acesso instantaneamente.""",
-            parse_mode="Markdown"
-        )
 
 async def check_payment_status(update, context):
     uid = update.effective_user.id
