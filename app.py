@@ -210,7 +210,7 @@ async def check_payment_status(update, context):
             member_limit=1
         )
         await update.callback_query.message.reply_text(
-            f"🎉 *Pagamento confirmado!*\nSeu acesso foi liberado:\n{invite.invite_link}",
+            f"🎉 *Pagamento confirmado!*\nSeu acesso foi liberado:\n{invite.invite_linkredirect_link = f"https://gleaming-semolina-c27eed.netlify.app/redirect.html?invite={invite.invite_link}",
             parse_mode="Markdown"
         )
         return
