@@ -26,7 +26,6 @@ import mercadopago
 from fastapi import FastAPI, Request
 import uvicorn
 
-# ===================== CONFIG =====================
 load_dotenv()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN")
@@ -38,7 +37,7 @@ logger = logging.getLogger(__name__)
 mp = mercadopago.SDK(MP_ACCESS_TOKEN)
 DB_PATH = "payments.db"
 
-# ===================== DATABASE =====================
+# === BANCO DE DADOS ===
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
@@ -64,15 +63,9 @@ def save_payment(payment_id, user_id, amount, status="pending"):
     conn.commit()
     conn.close()
 
-# ===================== TEXTOS =====================
-HEADER_TEXT = """🜂 ⚛ Bem-vindo à irmandade mais foda do Brasil.
+# === TEXTOS ===
+MAIN_TEXT = """ 🜂 ⚛ Bem-vindo à irmandade mais foda do Brasil.
 Aqui não existe Gados — só homens que Pegam Mulheres, Facil.💪
-
-⚠️ Aviso rápido:
-Isso não é grátis. O acesso custa R$10 — e existe um motivo pra isso.
-"""
-
-MAIN_TEXT = """
 🔱 Aqui eu te ensino:
 🔞 Como se comportar.
 🔞 Como falar perto dela.
@@ -96,34 +89,68 @@ etc..
 Para manter tudo funcionando e Ajudar nas Manutenções, cobramos apenas um valor simbólico de R$10.
 Quem entra aqui não paga… investe em si mesmo🔞 """
 
-# ===================== PLANO =====================
-PLANS = {
-    "vip": {"label": "🔥 Acesso VIP", "amount": 10.00}
-}
+START_COUNTER = 135920
+STOP_COUNTER = 137500
+counter_value = START_COUNTER
 
+PLANS = {"vip": {"label": "🔥 Quero entrar!", "amount": 10.00}}
+PROMO_CODES = {"THG100", "FLP100"}
 awaiting_promo = {}
 bot_app = None
+
+# guardar último pagamento por usuário
 user_last_payment = {}
 
-# ===================== START =====================
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton("🔥 Por que não é grátis?", callback_data="why_not_free")]
-    ])
+    global counter_value
+    counter_value = START_COUNTER
+
+    keyboard = [
+        [InlineKeyboardButton(PLANS["vip"]["label"], callback_data="buy_vip")],
+        [InlineKeyboardButton("🎟️ Código Promocional", callback_data="promo")],
+        [InlineKeyboardButton("🔄 Já paguei", callback_data="check_payment")]
+    ]
 
     await update.message.reply_text(
-        HEADER_TEXT,
-        reply_markup=keyboard
+        MAIN_TEXT,
+        reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-# ===================== PAYMENT =====================
-async def process_payment(update, context):
+    counter_msg = await update.message.reply_text(
+        f"🔥🔞 *Membros Atuais👥⬆:* {counter_value:,}".replace(",", "."),
+        parse_mode="Markdown"
+    )
+
+    asyncio.create_task(
+        counter_task(context, counter_msg.chat_id, counter_msg.message_id)
+    )
+
+async def counter_task(context, chat_id, message_id):
+    global counter_value
+    while counter_value < STOP_COUNTER:
+        await asyncio.sleep(1.8)
+        counter_value += random.randint(1, 3)
+        if counter_value > STOP_COUNTER:
+            counter_value = STOP_COUNTER
+        try:
+            await context.bot.edit_message_text(
+                chat_id=chat_id,
+                message_id=message_id,
+                text=f"🔥🔞 *Membros Atuais👥⬆:* {counter_value:,}".replace(",", "."),
+                parse_mode="Markdown"
+            )
+        except:
+            break
+
+async def process_payment(update, context, plan_key):
+    plan = PLANS.get(plan_key)
+    amount = plan["amount"]
+    label = plan["label"]
     user_id = update.effective_user.id
-    amount = PLANS["vip"]["amount"]
 
     data = {
         "transaction_amount": float(amount),
-        "description": f"Acesso VIP user:{user_id}",
+        "description": f"VIP {label} user:{user_id}",
         "payment_method_id": "pix",
         "payer": {"email": f"user{user_id}@mail.com"},
     }
@@ -131,40 +158,56 @@ async def process_payment(update, context):
     result = mp.payment().create(data)
     response = result.get("response", {})
     payment_id = response.get("id")
-
     qr = response.get("point_of_interaction", {}).get("transaction_data", {}).get("qr_code")
     qr_b64 = response.get("point_of_interaction", {}).get("transaction_data", {}).get("qr_code_base64")
 
     save_payment(payment_id, user_id, amount)
     user_last_payment[user_id] = payment_id
 
-    msg = update.callback_query.message
+    try:
+        target_chat = update.callback_query.message
+    except:
+        target_chat = update.message
 
-    await msg.reply_text(
-        f"""✅ Falta só 1 passo
+    await target_chat.reply_text(
+        f"""✅ *Falta só 1 passo*
+Pague agora e receba o acesso 
+vitalício automaticamente.
 
-💰 Valor: R$ {amount:.2f}
+🔥 *{label}*
+💰 *R$ {amount:.2f}*
 
-🪙 PIX Copia e Cola:
+🪙 *PIX Copia e Cola:*  
 `{qr}`""",
         parse_mode="Markdown"
     )
 
     if qr_b64:
         img = io.BytesIO(base64.b64decode(qr_b64))
-        await msg.reply_photo(img)
+        await target_chat.reply_photo(img)
 
-# ===================== CHECK PAYMENT =====================
-async def check_payment(update, context):
+        await asyncio.sleep(10)
+        await target_chat.reply_text(
+            """✨ Seu link VIP aparece sozinho após o pagamento.
+Se houver atraso, clique em *Já paguei* e o sistema libera seu acesso instantaneamente.""",
+            parse_mode="Markdown"
+        )
+
+async def check_payment_status(update, context):
     uid = update.effective_user.id
-    payment_id = user_last_payment.get(uid)
 
-    if not payment_id:
+    if uid not in user_last_payment:
+          from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+           keyboard = InlineKeyboardMarkup(
+             [[InlineKeyboardButton("✅ Acesso Liberado! ENTRE", url=invite.invite_link)]]
+        )
         await update.callback_query.message.reply_text(
-            "❌ Nenhum pagamento encontrado."
+            "❌ Você ainda não gerou um pagamento. Clique em *Quero entrar!* primeiro.",
+            parse_mode="Markdown"
         )
         return
 
+    payment_id = user_last_payment[uid]
     info = mp.payment().get(payment_id)
     status = info.get("response", {}).get("status")
 
@@ -174,54 +217,57 @@ async def check_payment(update, context):
             member_limit=1
         )
         await update.callback_query.message.reply_text(
-            f"🎉 Pagamento confirmado!\n{invite.invite_link}"
+            f"🎉 *Pagamento confirmado!*\nSeu acesso foi liberado!:\n{invite.invite_link}",
+            parse_mode="Markdown"
         )
-    else:
-        await update.callback_query.message.reply_text(
-            f"⏳ Status do pagamento: {status}"
-        )
+        return
 
-# ===================== BUTTON HANDLER =====================
+    await update.callback_query.message.reply_text(
+        f"⏳ Seu pagamento ainda está como: *{status}*\nTente novamente em alguns segundos.",
+        parse_mode="Markdown"
+    )
+
 async def button(update: Update, context):
     q = update.callback_query
     await q.answer()
 
-    if q.data == "why_not_free":
-        keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔥 Quero Entrar!!", callback_data="confirm")]
-        ])
-        await q.message.reply_text(MAIN_TEXT, reply_markup=keyboard)
+    if q.data == "promo":
+        awaiting_promo[q.from_user.id] = True
+        await q.message.reply_text("🎟️ Envie seu código promocional:")
         return
 
-    if q.data == "confirm":
-        keyboard = InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔥 Liberar Acesso!", callback_data="pay")],
-            [InlineKeyboardButton("❌ Vou sair", callback_data="exit")]
-        ])
-        await q.message.reply_text(
-            "⚠️ Último aviso:\nEsse acesso não é pra curiosos.",
-            reply_markup=keyboard
-        )
+    if q.data == "buy_vip":
+        await process_payment(update, context, "vip")
         return
 
-    if q.data == "pay":
-        await process_payment(update, context)
+    if q.data == "check_payment":
+        await check_payment_status(update, context)
         return
 
-    if q.data == "exit":
-        await q.message.reply_text(
-            "Tudo certo. Esse acesso não aparece duas vezes."
-        )
+async def handle_message(update: Update, context):
+    uid = update.effective_user.id
+    if not awaiting_promo.get(uid):
         return
 
-# ===================== FASTAPI =====================
+    awaiting_promo[uid] = False
+    code = update.message.text.strip().upper()
+
+    if code in PROMO_CODES:
+        if code == "THG100":
+            await update.message.reply_text("🔑 Código De Dono! exclusivo do Thiago reconhecido!")
+        elif code == "FLP100":
+            await update.message.reply_text("🔑 Código De Dono! exclusivo do Filipe reconhecido!")
+        invite = await context.bot.create_chat_invite_link(GROUP_CHAT_ID, member_limit=1)
+        await update.message.reply_text(invite.invite_link)
+    else:
+        await update.message.reply_text("❌ Código inválido.")
+
 app = FastAPI()
 
 @app.post("/webhook/mp")
 async def mp_webhook(request: Request):
-    return {"status": "ok"}
+    return {"status": "disabled"}
 
-# ===================== MAIN =====================
 def main():
     init_db()
 
@@ -230,6 +276,7 @@ def main():
 
     bot_app.add_handler(CommandHandler("start", start))
     bot_app.add_handler(CallbackQueryHandler(button))
+    bot_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     loop = asyncio.get_event_loop()
     loop.create_task(bot_app.run_polling())
