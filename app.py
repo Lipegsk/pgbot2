@@ -197,12 +197,8 @@ async def check_payment_status(update, context):
     uid = update.effective_user.id
 
     if uid not in user_last_payment:
-          from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-           keyboard = InlineKeyboardMarkup(
-             [[InlineKeyboardButton("✅ Acesso Liberado! ENTRE", url=invite.invite_link)]]
-        )
         await update.callback_query.message.reply_text(
-            "❌ Você ainda não gerou um pagamento. Clique em *Quero entrar!* primeiro.",
+            "❌ Você ainda não gerou um pagamento.\nClique em *🔥 Quero entrar!* primeiro.",
             parse_mode="Markdown"
         )
         return
@@ -217,7 +213,7 @@ async def check_payment_status(update, context):
             member_limit=1
         )
         await update.callback_query.message.reply_text(
-            f"🎉 *Pagamento confirmado!*\nSeu acesso foi liberado!:\n{invite.invite_link}",
+            f"🎉 *Pagamento confirmado!*\nSeu acesso foi liberado:\n{invite.invite_link}",
             parse_mode="Markdown"
         )
         return
