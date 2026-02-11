@@ -106,9 +106,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     counter_value = START_COUNTER
 
     keyboard = [
-        [InlineKeyboardButton(PLANS["vip"]["label"], callback_data="buy_vip")],
-        [InlineKeyboardButton("🎟️ Código Promocional", callback_data="promo")],
-        [InlineKeyboardButton("🔄 Já paguei", callback_data="check_payment")]
+        [InlineKeyboardButton("🔥 Quero entrar", callback_data="buy_vip")],
+        [InlineKeyboardButton("👀 Ver prévias", url="https://mestresdalabiaofc.netlify.app/")]
     ]
 
     await update.message.reply_text(
@@ -169,8 +168,12 @@ async def process_payment(update, context, plan_key):
     except:
         target_chat = update.message
 
+    keyboard = InlineKeyboardMarkup([
+    [InlineKeyboardButton("✅ Já paguei", callback_data="check_payment")]
+    ])
+
     await target_chat.reply_text(
-        f"""✅ *Falta só 1 passo*
+    f"""✅ *Falta só 1 passo*
 Pague agora e receba o acesso 
 vitalício automaticamente.
 
@@ -179,8 +182,9 @@ vitalício automaticamente.
 
 🪙 *PIX Copia e Cola:*  
 `{qr}`""",
-        parse_mode="Markdown"
-    )
+    parse_mode="Markdown",
+    reply_markup=keyboard
+)
 
     if qr_b64:
         img = io.BytesIO(base64.b64decode(qr_b64))
