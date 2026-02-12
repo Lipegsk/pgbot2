@@ -205,22 +205,26 @@ async def check_payment_status(update, context):
     status = info.get("response", {}).get("status")
 
     if status == "approved":
-    invite = await bot_app.bot.create_chat_invite_link(
-        GROUP_CHAT_ID,
-        member_limit=1
-    )
+        invite = await bot_app.bot.create_chat_invite_link(
+            GROUP_CHAT_ID,
+            member_limit=1
+        )
 
-    redirect_link = f"https://gleaming-semolina-c27eed.netlify.app/redirect.html?invite={invite.invite_link}"
+        redirect_link = (
+            f"https://gleaming-semolina-c27eed.netlify.app/"
+            f"redirect.html?invite={invite.invite_link}"
+        )
+
+        await update.callback_query.message.reply_text(
+            f"🎉 *Pagamento confirmado!*\n"
+            f"Seu acesso foi liberado:\n{redirect_link}",
+            parse_mode="Markdown"
+        )
+        return
 
     await update.callback_query.message.reply_text(
-        f"🎉 *Pagamento confirmado!*\n"
-        f"Seu acesso foi liberado:\n{redirect_link}",
-        parse_mode="Markdown"
-    )
-    return
-
-    await update.callback_query.message.reply_text(
-        f"⏳ Seu pagamento ainda está como: *{status}*\nTente novamente em alguns segundos.",
+        f"⏳ Seu pagamento ainda está como: *{status}*\n"
+        f"Tente novamente em alguns segundos.",
         parse_mode="Markdown"
     )
 
