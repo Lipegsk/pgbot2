@@ -209,7 +209,7 @@ async def check_payment_status(update, context):
             GROUP_CHAT_ID,
             member_limit=1
         )
-
+        
         redirect_link = (
             f"https://gleaming-semolina-c27eed.netlify.app/"
             f"redirect.html?invite={invite.invite_link}"
