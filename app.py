@@ -263,12 +263,6 @@ async def handle_message(update: Update, context):
     else:
         await update.message.reply_text("❌ Código inválido.")
 
-app = FastAPI()
-
-@app.post("/webhook/mp")
-async def mp_webhook(request: Request):
-    return {"status": "disabled"}
-
 def main():
     init_db()
 
@@ -279,10 +273,8 @@ def main():
     bot_app.add_handler(CallbackQueryHandler(button))
     bot_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    loop = asyncio.get_event_loop()
-    loop.create_task(bot_app.run_polling())
+    bot_app.run_polling()
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
 
 if __name__ == "__main__":
     main()
