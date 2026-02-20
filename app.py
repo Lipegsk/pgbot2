@@ -105,11 +105,19 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global counter_value
     counter_value = START_COUNTER
 
+    # 🔥 ENVIA O VÍDEO PRIMEIRO
+    with open("intro.mp4", "rb") as video:
+        await update.message.reply_video(
+            video=video,
+            caption="🔥 Assista até o final..."
+        )
+
     keyboard = [
         [InlineKeyboardButton("🔥 Quero entrar", callback_data="buy_vip")],
         [InlineKeyboardButton("👀 Ver prévias", url="https://mestresdalabiaofc.netlify.app/")]
     ]
 
+    # 🔥 DEPOIS ENVIA A MENSAGEM NORMAL
     await update.message.reply_text(
         MAIN_TEXT,
         reply_markup=InlineKeyboardMarkup(keyboard)
