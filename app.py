@@ -106,11 +106,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     counter_value = START_COUNTER
 
     # 🔥 ENVIA O VÍDEO PRIMEIRO
-    with open("intro.mp4", "rb") as video:
-        await update.message.reply_video(
-            video=video,
-            caption="🔥 Assista até o final..."
-        )
+    await update.message.reply_video(
+        video="https://files.catbox.moe/van95t.mp4",
+        caption="🔥"
+    )
 
     keyboard = [
         [InlineKeyboardButton("🔥 Quero entrar", callback_data="buy_vip")],
