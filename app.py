@@ -108,7 +108,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # 🔥 ENVIA O VÍDEO PRIMEIRO
     await update.message.reply_video(
-        video="https://files.catbox.moe/da0642.mp4",
+        video="https://files.catbox.moe/van95t.mp4",
         caption="🔥"
     )
 
