@@ -88,7 +88,7 @@ etc..
 Para manter tudo funcionando e Ajudar nas Manutenções, cobramos apenas um valor simbólico de R$10.
 Quem entra aqui não paga… investe em si mesmo🔞
 
-[🕵‍♂️ Privacidade  💯% Garantida ] """
+ 🔞Privacidade  💯% Garantida  """
 
 START_COUNTER = 135920
 STOP_COUNTER = 137500
