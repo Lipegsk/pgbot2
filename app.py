@@ -86,7 +86,9 @@ etc..
 🔥Faça Qualquer Pessoa Comer Na sua mão. E Ficar Louca pra te dar,😈🔞
 
 Para manter tudo funcionando e Ajudar nas Manutenções, cobramos apenas um valor simbólico de R$10.
-Quem entra aqui não paga… investe em si mesmo🔞 """
+Quem entra aqui não paga… investe em si mesmo🔞
+
+[🕵‍♂️ Privacidade  💯% Garantida ] """
 
 START_COUNTER = 135920
 STOP_COUNTER = 137500
@@ -106,7 +108,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # 🔥 ENVIA O VÍDEO PRIMEIRO
     await update.message.reply_video(
-        video="https://files.catbox.moe/van95t.mp4",
+        video="https://files.catbox.moe/da0642.mp4",
         caption="🔥"
     )
 
