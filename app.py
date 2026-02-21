@@ -64,9 +64,8 @@ def save_payment(payment_id, user_id, amount, status="pending"):
     conn.close()
 
 # === TEXTOS ===
-MAIN_TEXT = """ 🜂 ⚛ Bem-vindo à irmandade mais foda do Brasil.
-Aqui não existe Gados — só homens que Pegam Mulheres, Facil.💪
-🔱 Aqui eu te ensino:
+MAIN_TEXT = """ 🜂 ⚛ MESTRES DA LÁBIA
+🔱 Aqui Você vai Aprender:
 🔞 Como se comportar.
 🔞 Como falar perto dela.
 😈Oque Falar Pra Ela..
@@ -82,7 +81,7 @@ E muito mais...
 🏹 Elaboração de Elogios Subjetivos
 ⚠️ Temos Conteúdos proibidos em +24 países 
 etc..
-📲 2Mil Mensagens Prontas Baseadas em Psicologia e Manipulação, Faz ela responder na mesma hora.🔞
+📲 2Mil Mensagens Prontas Baseadas em Psicologia e Manipulação, Que Faz ela Te responder na mesma hora.🔞
 
 🔥Faça Qualquer Pessoa Comer Na sua mão. E Ficar Louca pra te dar,😈🔞
 
@@ -183,6 +182,10 @@ async def process_payment(update, context, plan_key):
     f"""✅ *Falta só 1 passo*
 Pague agora e receba o acesso 
 vitalício automaticamente.
+
+✅ Se Você Não Gostar
+Peça Seu Reenbolso No Suporte
+Lá Dentro, Te Devolvemos Na Mesma Hora.
 
 🔥 *{label}*
 💰 *valor simbólico R$ {amount:.2f}*
